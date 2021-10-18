@@ -1,0 +1,50 @@
+service: github-actions-serverless
+
+package:
+  individually: true
+  exclude:
+    - ./logo.png
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: ${opt:stage}
+  region: ap-southeast-2
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+    packager: 'yarn'
+  prune:
+    automatic: true
+    number: 5
+  customDomain:
+    domainName: 'test-api.staging.lawpath.net'
+    basePath: ''
+    stage: ${opt:stage}
+    certificateArn: 'arn:aws:acm:us-east-1:441542697405:certificate/42adec53-cb2d-4b80-ac06-582e0608e90f'
+    createRoute53Record: true
+    autoDomain: true
+    autoDomainWaitFor: 120
+    hostedZoneId: 'Z06219171B88M9ROEGGUH'
+
+functions:
+  hello:
+    handler: src/hello.default
+    events:
+      - http:
+          path: hello
+          method: get
+  helloAgain:
+    handler: src/hello.default
+    events:
+      - http:
+          path: hello-again
+          method: get
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-prune-plugin
+  - serverless-domain-manager
